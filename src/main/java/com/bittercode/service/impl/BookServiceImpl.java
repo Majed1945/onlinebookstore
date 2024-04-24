@@ -47,23 +47,19 @@ public class BookServiceImpl implements BookService {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                String bCode = rs.getString(1);
-                String bName = rs.getString(2);
-                String bAuthor = rs.getString(3);
-                int bPrice = rs.getInt(4);
-                int bQty = rs.getInt(5);
-
-                book = new Book(bCode, bName, bAuthor, bPrice, bQty);
+                book = createBookFromResultSet(rs); // Using extracted method to create Book object
             }
         } catch (SQLException e) {
-
+            // Handle exception
+        } finally {
+            DBUtil.closeConnection(con);
         }
         return book;
     }
 
     @Override
     public List<Book> getAllBooks() throws StoreException {
-        List<Book> books = new ArrayList<Book>();
+        List<Book> books = new ArrayList<>();
         Connection con = DBUtil.getConnection();
 
         try {
@@ -71,17 +67,13 @@ public class BookServiceImpl implements BookService {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                String bCode = rs.getString(1);
-                String bName = rs.getString(2);
-                String bAuthor = rs.getString(3);
-                int bPrice = rs.getInt(4);
-                int bQty = rs.getInt(5);
-
-                Book book = new Book(bCode, bName, bAuthor, bPrice, bQty);
+                Book book = createBookFromResultSet(rs); // Using extracted method to create Book object
                 books.add(book);
             }
         } catch (SQLException e) {
-
+            // Handle exception
+        } finally {
+            DBUtil.closeConnection(con);
         }
         return books;
     }
@@ -97,9 +89,11 @@ public class BookServiceImpl implements BookService {
             if (k == 1) {
                 response = ResponseCode.SUCCESS.name();
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             response += " : " + e.getMessage();
             e.printStackTrace();
+        } finally {
+            DBUtil.closeConnection(con);
         }
         return response;
     }
@@ -119,9 +113,11 @@ public class BookServiceImpl implements BookService {
             if (k == 1) {
                 responseCode = ResponseCode.SUCCESS.name();
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             responseCode += " : " + e.getMessage();
             e.printStackTrace();
+        } finally {
+            DBUtil.closeConnection(con);
         }
         return responseCode;
     }
@@ -136,16 +132,18 @@ public class BookServiceImpl implements BookService {
             ps.setString(2, bookId);
             ps.executeUpdate();
             responseCode = ResponseCode.SUCCESS.name();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             responseCode += " : " + e.getMessage();
             e.printStackTrace();
+        } finally {
+            DBUtil.closeConnection(con);
         }
         return responseCode;
     }
 
     @Override
     public List<Book> getBooksByCommaSeperatedBookIds(String commaSeperatedBookIds) throws StoreException {
-        List<Book> books = new ArrayList<Book>();
+        List<Book> books = new ArrayList<>();
         Connection con = DBUtil.getConnection();
         try {
             String getBooksByCommaSeperatedBookIdsQuery = "SELECT * FROM " + BooksDBConstants.TABLE_BOOK
@@ -155,17 +153,13 @@ public class BookServiceImpl implements BookService {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                String bCode = rs.getString(1);
-                String bName = rs.getString(2);
-                String bAuthor = rs.getString(3);
-                int bPrice = rs.getInt(4);
-                int bQty = rs.getInt(5);
-
-                Book book = new Book(bCode, bName, bAuthor, bPrice, bQty);
+                Book book = createBookFromResultSet(rs); // Using extracted method to create Book object
                 books.add(book);
             }
         } catch (SQLException e) {
-
+            // Handle exception
+        } finally {
+            DBUtil.closeConnection(con);
         }
         return books;
     }
@@ -183,11 +177,23 @@ public class BookServiceImpl implements BookService {
             ps.setString(5, book.getBarcode());
             ps.executeUpdate();
             responseCode = ResponseCode.SUCCESS.name();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             responseCode += " : " + e.getMessage();
             e.printStackTrace();
+        } finally {
+            DBUtil.closeConnection(con);
         }
         return responseCode;
     }
 
+    // Extracted method to create a Book object from ResultSet
+    private Book createBookFromResultSet(ResultSet rs) throws SQLException {
+        String bCode = rs.getString(1);
+        String bName = rs.getString(2);
+        String bAuthor = rs.getString(3);
+        int bPrice = rs.getInt(4);
+        int bQty = rs.getInt(5);
+
+        return new Book(bCode, bName, bAuthor, bPrice, bQty);
+    }
 }
